@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // 1. Create the Axios Instance
 // When you deploy to Render later, you only change this BASE_URL.
-const BASE_URL = 'http://localhost:5000/api'; 
+const BASE_URL = 'https://creare-scoring.onrender.com';
+// const BASE_URL = 'http://localhost:5000/api'; 
 
 const api = axios.create({
     baseURL: BASE_URL,
