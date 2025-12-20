@@ -1,0 +1,13 @@
+@import "tailwindcss";
+
+@theme {
+  /* Renaming variables to match your JSX class usage */
+  --color-uaBlue: #072758;
+  --color-uaGray: #EBEBEB;
+  --color-uaWhite: #FFFFFF;
+}
+
+body {
+  /* Use the updated variable name here too */
+  background-color: var(--color-uaGray);
+}
