@@ -36,7 +36,8 @@ app.get('/seed', async (req, res) => {
         const teams = Array.from({ length: 17 }, (_, i) => ({
             name: `Team ${i + 1}`,
             projectTitle: `Capstone Project Title ${i + 1}`,
-            description: "Research Description Placeholder"
+            description: "Research Description Placeholder",
+            paperLink: "https://docs.google.com"
         }));
         await Team.insertMany(teams);
 

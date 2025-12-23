@@ -12,12 +12,13 @@ import {
     Megaphone, 
     Search,
     Eye,
-    Edit3 // Added Edit Icon
+    Edit3,
+    ExternalLink 
 } from 'lucide-react';
 
 export default function JudgeDashboard() {
     const [teams, setTeams] = useState([]);
-    const [existingScores, setExistingScores] = useState([]); // Stores scores already submitted by this judge
+    const [existingScores, setExistingScores] = useState([]); 
     const [selectedTeam, setSelectedTeam] = useState(null);
     const [scores, setScores] = useState({}); 
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -25,7 +26,6 @@ export default function JudgeDashboard() {
     const navigate = useNavigate();
     const dropdownRef = useRef(null);
 
-    // Close dropdown if clicked outside
     useEffect(() => {
         function handleClickOutside(event) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -36,12 +36,11 @@ export default function JudgeDashboard() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [dropdownRef]);
 
-    // Fetch Teams AND Judge's Previous Scores
     const loadData = async () => {
         try {
             const [teamsRes, scoresRes] = await Promise.all([
                 api.get('/scores/teams'),
-                api.get('/scores/judge-scores') // Fetch existing scores
+                api.get('/scores/judge-scores') 
             ]);
             setTeams(teamsRes.data);
             setExistingScores(scoresRes.data);
@@ -55,13 +54,9 @@ export default function JudgeDashboard() {
         loadData();
     }, [navigate]);
 
-    // Handle Team Selection (Pre-fill logic)
     const handleSelectTeam = (team) => {
-        // Check if this team has already been scored
         const previousScore = existingScores.find(s => s.teamId === team._id);
-
         if (previousScore) {
-            // Pre-fill the state with existing data
             setScores({
                 paper: previousScore.paper,
                 presenter: previousScore.presenter,
@@ -69,10 +64,8 @@ export default function JudgeDashboard() {
                 marketing: previousScore.marketing
             });
         } else {
-            // Reset if fresh
             setScores({});
         }
-        
         setSelectedTeam(team);
         setIsDropdownOpen(false);
         window.scrollTo(0,0);
@@ -88,6 +81,14 @@ export default function JudgeDashboard() {
             ...prev,
             [category]: { ...prev[category] || {}, [criteria]: val }
         }));
+    };
+
+    const viewPaper = () => {
+        if (selectedTeam && selectedTeam.paperLink) {
+            window.open(selectedTeam.paperLink, '_blank');
+        } else {
+            Swal.fire('Info', 'No paper link available for this team.', 'info');
+        }
     };
 
     const viewPoster = () => {
@@ -125,7 +126,6 @@ export default function JudgeDashboard() {
         if (result.isConfirmed) {
             try {
                 await api.post('/scores/submit', { teamId: selectedTeam._id, scores });
-                
                 await Swal.fire({
                     title: isUpdate ? 'Updated!' : 'Submitted!',
                     text: 'Scores have been recorded successfully.',
@@ -133,8 +133,6 @@ export default function JudgeDashboard() {
                     confirmButtonColor: '#072758',
                     timer: 1500
                 });
-                
-                // Refresh data to update the "Graded" status list
                 await loadData();
                 setSelectedTeam(null);
                 setScores({});
@@ -150,15 +148,11 @@ export default function JudgeDashboard() {
         t.projectTitle.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // Helper to check if a team is already graded
     const isGraded = (teamId) => existingScores.some(s => s.teamId === teamId);
-
-    // Helper to check if currently selected team is being edited
     const isEditing = selectedTeam && isGraded(selectedTeam._id);
 
     return (
         <div className="min-h-screen bg-gray-50 pb-20">
-            {/* Sticky Header */}
             {selectedTeam && (
                 <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm px-4 py-3 flex justify-between items-center">
                     <div className="flex items-center gap-3">
@@ -201,10 +195,7 @@ export default function JudgeDashboard() {
                                         return (
                                             <button 
                                                 key={team._id}
-                                                onClick={() => {
-                                                    // Warning only if unsaved changes exist (basic check)
-                                                    handleSelectTeam(team);
-                                                }}
+                                                onClick={() => handleSelectTeam(team)}
                                                 className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 flex justify-between items-center ${selectedTeam._id === team._id ? 'bg-blue-50 text-uaBlue font-bold' : 'text-gray-700'}`}
                                             >
                                                 <span className="truncate w-40">{team.name}</span>
@@ -248,13 +239,11 @@ export default function JudgeDashboard() {
                                         className={`group p-5 rounded-xl shadow-sm hover:shadow-md border transition-all flex items-start gap-4 relative overflow-hidden text-left
                                             ${graded ? 'bg-blue-50/50 border-green-200' : 'bg-white border-gray-100 hover:border-uaBlue'}`}
                                     >
-                                        {/* Graded Indicator */}
                                         {graded && (
                                             <div className="absolute top-0 right-0 bg-green-500 text-white text-[10px] font-bold px-2 py-1 rounded-bl-lg z-10">
                                                 GRADED
                                             </div>
                                         )}
-
                                         <div className={`h-12 w-12 rounded-lg flex items-center justify-center font-bold transition-colors
                                             ${graded ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-uaBlue group-hover:bg-uaBlue group-hover:text-white'}`}>
                                             {idx + 1}
@@ -271,8 +260,6 @@ export default function JudgeDashboard() {
                     </div>
                 ) : (
                     <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 space-y-6">
-                        
-                        {/* Edit Mode Warning Banner */}
                         {isEditing && (
                             <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded-lg flex items-center gap-3">
                                 <Edit3 size={20} />
@@ -283,7 +270,19 @@ export default function JudgeDashboard() {
                             </div>
                         )}
 
-                        <SectionCard title="Best Paper Criteria" icon={<Layout className="text-white" size={20} />} color="bg-uaBlue">
+                        <SectionCard 
+                            title="Best Paper Criteria" 
+                            icon={<Layout className="text-white" size={20} />} 
+                            color="bg-uaBlue"
+                            action={
+                                <button 
+                                    onClick={viewPaper}
+                                    className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white px-3 py-1.5 rounded-lg text-sm font-semibold border border-white/40 transition-colors"
+                                >
+                                    <ExternalLink size={16} /> View Paper
+                                </button>
+                            }
+                        >
                             <Input label="Research Quality & Tech Soundness" max={30} value={scores?.paper?.researchQuality} desc="Clarity of the problem and objectives, strength of theoretical grounding, appropriateness of methodology, and robustness of system design and implementation." onChange={(v) => handleScoreChange('paper', 'researchQuality', v, 30)} />
                             <Input label="Innovation & Originality" max={20} value={scores?.paper?.innovation} desc="Novelty of the idea, creativity of approach, uniqueness of features, and potential to disrupt or improve existing solutions." onChange={(v) => handleScoreChange('paper', 'innovation', v, 20)} />
                             <Input label="Impact, Adoption & Value" max={20} value={scores?.paper?.impact} desc="Relevance to industry, community, or society; feasibility of deployment; successful or potential utilization and adoption." onChange={(v) => handleScoreChange('paper', 'impact', v, 20)} />

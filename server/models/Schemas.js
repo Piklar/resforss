@@ -5,6 +5,7 @@ const TeamSchema = new mongoose.Schema({
     name: { type: String, required: true },
     projectTitle: { type: String, required: true },
     description: String,
+    paperLink: { type: String, default: "" }
 });
 
 // User Model (Admins and Judges)

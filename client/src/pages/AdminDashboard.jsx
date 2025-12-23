@@ -9,14 +9,14 @@ import {
     Users, 
     FileText, 
     Layout, 
-    Megaphone,
-    X
+    X,
+    ExternalLink
 } from 'lucide-react';
 
 export default function AdminDashboard() {
     const [rawScores, setRawScores] = useState([]);
     const [results, setResults] = useState([]);
-    const [selectedTeam, setSelectedTeam] = useState(null); // For the detailed modal
+    const [selectedTeam, setSelectedTeam] = useState(null); 
     const [lastUpdated, setLastUpdated] = useState(new Date());
     const [searchTerm, setSearchTerm] = useState("");
 
@@ -30,7 +30,6 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         fetchData();
-        // Optional: Auto-refresh every 30 seconds
         const interval = setInterval(fetchData, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -45,8 +44,8 @@ export default function AdminDashboard() {
                     id: tid,
                     name: entry.teamId.name,
                     projectTitle: entry.teamId.projectTitle,
-                    judges: [], // To store individual judge breakdowns
-                    // Aggregators
+                    paperLink: entry.teamId.paperLink,
+                    judges: [], 
                     totalPaper: 0, 
                     totalPresenter: 0,
                     totalPoster: 0,
@@ -63,16 +62,14 @@ export default function AdminDashboard() {
             const po = entry.poster || {};
             const m = entry.marketing || {};
 
-            // Calculate Judge Totals
             const judgePaperTotal = (p.researchQuality||0) + (p.innovation||0) + (p.impact||0) + (p.usability||0) + (p.evaluation||0);
             const judgePresenterTotal = (pr.clarity||0) + (pr.mastery||0) + (pr.panelDefense||0) + (pr.visualAids||0) + (pr.timeManagement||0) + (pr.leadership||0) + (pr.ethics||0);
             const judgePosterTotal = (po.design||0) + (po.explanation||0) + (po.clarity||0);
             const judgeMarketingTotal = (m.clarity||0) + (m.creativity||0) + (m.relevance||0) + (m.content||0) + (m.professionalism||0);
 
-            // Add to Judges List for Breakdown
             teamScores[tid].judges.push({
                 name: entry.judgeId ? entry.judgeId.name : "Unknown Judge",
-                scores: entry, // Keep raw scores for modal
+                scores: entry, 
                 totals: {
                     paper: judgePaperTotal,
                     presenter: judgePresenterTotal,
@@ -81,7 +78,6 @@ export default function AdminDashboard() {
                 }
             });
             
-            // Add to Aggregates
             teamScores[tid].totalPaper += judgePaperTotal;
             teamScores[tid].totalPresenter += judgePresenterTotal;
             teamScores[tid].totalPoster += judgePosterTotal;
@@ -93,14 +89,12 @@ export default function AdminDashboard() {
             teamScores[tid].count++;
         });
 
-        // Calculate Final Averages
         const final = Object.values(teamScores).map(t => ({
             ...t,
             avgPaper: (t.totalPaper / t.count).toFixed(2),
             avgPresenter: (t.totalPresenter / t.count).toFixed(2),
             avgPoster: (t.totalPoster / t.count).toFixed(2),
             avgMarketing: (t.totalMarketing / t.count).toFixed(2),
-            
             avgInnovation: (t.innovation / t.count).toFixed(2),
             avgBreakthrough: (t.breakthrough / t.count).toFixed(2),
             avgUX: (t.ux / t.count).toFixed(2),
@@ -109,7 +103,6 @@ export default function AdminDashboard() {
         setResults(final);
     };
 
-    // Filter for search
     const filteredResults = results.filter(r => 
         r.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -163,27 +156,37 @@ export default function AdminDashboard() {
                                 <tr>
                                     <th className="px-6 py-4">Team</th>
                                     <th className="px-6 py-4 text-center">Judges Scored</th>
-                                    <th className="px-6 py-4 text-center text-yellow-300">Paper (Avg)</th>
-                                    <th className="px-6 py-4 text-center text-green-300">Presenter (Avg)</th>
-                                    <th className="px-6 py-4 text-center text-purple-300">Poster (Avg)</th>
+                                    <th className="px-6 py-4 text-center bg-white/10">Paper (Avg)</th>
+                                    <th className="px-6 py-4 text-center bg-white/10">Presenter (Avg)</th>
+                                    <th className="px-6 py-4 text-center bg-white/10">Poster (Avg)</th>
                                     <th className="px-6 py-4 text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredResults.map((r, i) => (
                                     <tr key={i} className="hover:bg-blue-50 transition-colors">
-                                        <td className="px-6 py-4">
-                                            <div className="font-bold text-uaBlue text-lg">{r.name}</div>
-                                            <div className="text-gray-500 text-xs">{r.projectTitle}</div>
+                                        <td className="px-6 py-4 flex items-center gap-4">
+                                            <div className="h-12 w-12 rounded-lg bg-white border border-gray-200 p-1 shadow-sm flex-shrink-0">
+                                                <img 
+                                                    src={`/teams/${r.name}.png`} 
+                                                    onError={(e) => {e.target.onerror = null; e.target.src = "https://via.placeholder.com/50?text=IMG"}} 
+                                                    alt={r.name} 
+                                                    className="h-full w-full object-contain"
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-uaBlue text-lg">{r.name}</div>
+                                                <div className="text-gray-500 text-xs line-clamp-1">{r.projectTitle}</div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4 text-center">
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                 {r.count} Judges
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg">{r.avgPaper}</td>
-                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg">{r.avgPresenter}</td>
-                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg">{r.avgPoster}</td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg text-yellow-600 bg-yellow-50/50">{r.avgPaper}</td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg text-green-600 bg-green-50/50">{r.avgPresenter}</td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg text-purple-600 bg-purple-50/50">{r.avgPoster}</td>
                                         <td className="px-6 py-4 text-center">
                                             <button 
                                                 onClick={() => setSelectedTeam(r)}
@@ -194,11 +197,6 @@ export default function AdminDashboard() {
                                         </td>
                                     </tr>
                                 ))}
-                                {filteredResults.length === 0 && (
-                                    <tr>
-                                        <td colSpan="6" className="text-center py-8 text-gray-500">No scores submitted yet.</td>
-                                    </tr>
-                                )}
                             </tbody>
                         </table>
                     </div>
@@ -211,8 +209,15 @@ export default function AdminDashboard() {
                     <div className="bg-white w-full max-w-5xl max-h-[90vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
                         
                         {/* Modal Header */}
-                        <div className="bg-uaBlue p-6 flex justify-between items-start">
-                            <div>
+                        <div className="bg-uaBlue p-6 flex items-center gap-4">
+                            <div className="h-16 w-16 bg-white rounded-lg p-1">
+                                <img 
+                                    src={`/teams/${selectedTeam.name}.png`} 
+                                    onError={(e) => {e.target.src = "https://via.placeholder.com/50?text=IMG"}} 
+                                    className="h-full w-full object-contain"
+                                />
+                            </div>
+                            <div className="flex-1">
                                 <h2 className="text-2xl font-bold text-white">{selectedTeam.name}</h2>
                                 <p className="text-blue-200 text-sm">{selectedTeam.projectTitle}</p>
                             </div>
@@ -224,7 +229,7 @@ export default function AdminDashboard() {
                             </button>
                         </div>
 
-                        {/* Modal Body (Scrollable) */}
+                        {/* Modal Body */}
                         <div className="p-6 overflow-y-auto">
                             <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
                                 <Users size={20} /> Judge Breakdown
@@ -240,17 +245,17 @@ export default function AdminDashboard() {
                                             <span className="font-bold text-uaBlue">{judge.name}</span>
                                         </div>
 
-                                        <div className="space-y-3 text-sm">
+                                        <div className="space-y-4 text-sm">
                                             {/* Paper Breakdown */}
                                             <div>
                                                 <div className="flex justify-between font-bold text-gray-700">
                                                     <span>Paper</span>
                                                     <span>{judge.totals.paper}/100</span>
                                                 </div>
-                                                <div className="pl-2 text-xs text-gray-500 space-y-1 mt-1 border-l-2 border-gray-300">
-                                                    <div className="flex justify-between"><span>Research:</span> <span>{judge.scores.paper?.researchQuality}</span></div>
-                                                    <div className="flex justify-between"><span>Innovation:</span> <span>{judge.scores.paper?.innovation}</span></div>
-                                                    <div className="flex justify-between"><span>Impact:</span> <span>{judge.scores.paper?.impact}</span></div>
+                                                <div className="pl-2 text-xs text-gray-500 space-y-1 mt-1 border-l-2 border-yellow-400">
+                                                    <div className="flex justify-between"><span>Research:</span> <span>{judge.scores.paper?.researchQuality || 0}</span></div>
+                                                    <div className="flex justify-between"><span>Innovation:</span> <span>{judge.scores.paper?.innovation || 0}</span></div>
+                                                    <div className="flex justify-between"><span>Impact:</span> <span>{judge.scores.paper?.impact || 0}</span></div>
                                                 </div>
                                             </div>
 
@@ -260,18 +265,16 @@ export default function AdminDashboard() {
                                                     <span>Presenter</span>
                                                     <span>{judge.totals.presenter}/100</span>
                                                 </div>
-                                                <div className="pl-2 text-xs text-gray-500 space-y-1 mt-1 border-l-2 border-green-300">
-                                                    <div className="flex justify-between"><span>Mastery:</span> <span>{judge.scores.presenter?.mastery}</span></div>
-                                                    <div className="flex justify-between"><span>Q&A:</span> <span>{judge.scores.presenter?.panelDefense}</span></div>
+                                                <div className="pl-2 text-xs text-gray-500 space-y-1 mt-1 border-l-2 border-green-400">
+                                                    <div className="flex justify-between"><span>Mastery:</span> <span>{judge.scores.presenter?.mastery || 0}</span></div>
+                                                    <div className="flex justify-between"><span>Q&A:</span> <span>{judge.scores.presenter?.panelDefense || 0}</span></div>
                                                 </div>
                                             </div>
 
                                             {/* Poster Breakdown */}
-                                            <div>
-                                                <div className="flex justify-between font-bold text-gray-700">
-                                                    <span>Poster</span>
-                                                    <span>{judge.totals.poster}/100</span>
-                                                </div>
+                                            <div className="bg-white p-2 rounded border border-gray-100 flex justify-between font-bold text-gray-700">
+                                                <span>Poster</span>
+                                                <span>{judge.totals.poster}/100</span>
                                             </div>
                                         </div>
                                     </div>
@@ -302,11 +305,20 @@ const getWinner = (list, key) => {
     const sorted = [...list].sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]));
     const winner = sorted[0];
     return (
-        <div>
-            <span className="block text-xl font-bold truncate">{winner.name}</span>
-            <span className="text-sm font-bold bg-yellow-400/20 text-yellow-700 px-2 py-0.5 rounded border border-yellow-400/50 inline-block mt-1">
-                Score: {winner[key]}
-            </span>
+        <div className="flex items-center gap-3">
+             <div className="h-12 w-12 rounded-lg bg-gray-50 border border-gray-100 p-1 flex-shrink-0">
+                <img 
+                    src={`/teams/${winner.name}.png`} 
+                    onError={(e) => {e.target.src = "https://via.placeholder.com/50?text=IMG"}} 
+                    className="h-full w-full object-contain"
+                />
+            </div>
+            <div className="overflow-hidden">
+                <span className="block text-lg font-bold truncate text-uaBlue">{winner.name}</span>
+                <span className="text-xs font-bold bg-yellow-400/20 text-yellow-700 px-2 py-0.5 rounded border border-yellow-400/50 inline-block">
+                    Score: {winner[key]}
+                </span>
+            </div>
         </div>
     );
 };
@@ -319,9 +331,9 @@ const AwardCard = ({ title, winner, sub, icon }) => (
         <h3 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
             {title}
         </h3>
-        <div className="text-uaBlue mb-1 relative z-10">
+        <div className="relative z-10">
             {winner}
         </div>
-        <p className="text-xs text-gray-400 mt-2">{sub}</p>
+        <p className="text-xs text-gray-400 mt-2 ml-1">{sub}</p>
     </div>
 );
