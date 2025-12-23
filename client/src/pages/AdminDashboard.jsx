@@ -9,8 +9,13 @@ import {
     Users, 
     FileText, 
     Layout, 
+    Megaphone,
     X,
-    ExternalLink
+    Lightbulb,
+    Rocket,
+    Monitor,
+    Mic,
+    Image as ImageIcon
 } from 'lucide-react';
 
 export default function AdminDashboard() {
@@ -62,6 +67,7 @@ export default function AdminDashboard() {
             const po = entry.poster || {};
             const m = entry.marketing || {};
 
+            // Calculate Totals per Judge
             const judgePaperTotal = (p.researchQuality||0) + (p.innovation||0) + (p.impact||0) + (p.usability||0) + (p.evaluation||0);
             const judgePresenterTotal = (pr.clarity||0) + (pr.mastery||0) + (pr.panelDefense||0) + (pr.visualAids||0) + (pr.timeManagement||0) + (pr.leadership||0) + (pr.ethics||0);
             const judgePosterTotal = (po.design||0) + (po.explanation||0) + (po.clarity||0);
@@ -78,23 +84,28 @@ export default function AdminDashboard() {
                 }
             });
             
+            // Add to Aggregate Sums
             teamScores[tid].totalPaper += judgePaperTotal;
             teamScores[tid].totalPresenter += judgePresenterTotal;
             teamScores[tid].totalPoster += judgePosterTotal;
             teamScores[tid].totalMarketing += judgeMarketingTotal;
 
+            // Specific Criteria Sums (for Special Awards)
             teamScores[tid].innovation += (p.innovation||0);
-            teamScores[tid].breakthrough += (p.innovation||0) + (p.impact||0);
-            teamScores[tid].ux += (p.usability||0);
+            teamScores[tid].breakthrough += (p.innovation||0) + (p.impact||0); // Innovation + Impact
+            teamScores[tid].ux += (p.usability||0); // Usability/UX
             teamScores[tid].count++;
         });
 
         const final = Object.values(teamScores).map(t => ({
             ...t,
+            // Calculate Final Averages
             avgPaper: (t.totalPaper / t.count).toFixed(2),
             avgPresenter: (t.totalPresenter / t.count).toFixed(2),
             avgPoster: (t.totalPoster / t.count).toFixed(2),
             avgMarketing: (t.totalMarketing / t.count).toFixed(2),
+            
+            // Special Awards Averages
             avgInnovation: (t.innovation / t.count).toFixed(2),
             avgBreakthrough: (t.breakthrough / t.count).toFixed(2),
             avgUX: (t.ux / t.count).toFixed(2),
@@ -140,15 +151,33 @@ export default function AdminDashboard() {
                     </div>
                 </div>
 
-                {/* Awards Summary Cards */}
+                {/* --- AWARDS SECTION (Based on PDF) --- */}
+                <h3 className="text-xl font-bold text-gray-700 mb-4 border-l-4 border-yellow-500 pl-3">Award Winners</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <AwardCard icon={<FileText size={24}/>} title="Best Capstone Paper" winner={getWinner(results, 'avgPaper')} sub="Highest Paper Score" />
-                    <AwardCard icon={<Users size={24}/>} title="Best Presenter" winner={getWinner(results, 'avgPresenter')} sub="Highest Presentation Score" />
-                    <AwardCard icon={<Layout size={24}/>} title="Best Poster" winner={getWinner(results, 'avgPoster')} sub="Highest Poster Score" />
-                    <AwardCard icon={<Trophy size={24}/>} title="Most Innovative" winner={getWinner(results, 'avgInnovation')} sub="Highest Innovation Criteria" />
+                    {/* 1. Best Capstone Paper */}
+                    <AwardCard icon={<FileText size={24}/>} title="Best Capstone Paper" winner={getWinner(results, 'avgPaper')} sub="Highest Overall Paper Score" />
+                    
+                    {/* 2. Most Innovative Research */}
+                    <AwardCard icon={<Lightbulb size={24}/>} title="Most Innovative Research" winner={getWinner(results, 'avgInnovation')} sub="Highest Innovation Score" />
+                    
+                    {/* 3. Breakthrough Research Award */}
+                    <AwardCard icon={<Rocket size={24}/>} title="Breakthrough Research" winner={getWinner(results, 'avgBreakthrough')} sub="Innovation + Impact" />
+                    
+                    {/* 4. Best UI/UX Design */}
+                    <AwardCard icon={<Monitor size={24}/>} title="Best UI/UX Design" winner={getWinner(results, 'avgUX')} sub="Highest Usability Score" />
+                    
+                    {/* 5. Best Paper Presenter */}
+                    <AwardCard icon={<Mic size={24}/>} title="Best Paper Presenter" winner={getWinner(results, 'avgPresenter')} sub="Highest Presenter Score" />
+                    
+                    {/* 6. Best Poster */}
+                    <AwardCard icon={<ImageIcon size={24}/>} title="Best Poster" winner={getWinner(results, 'avgPoster')} sub="Highest Poster Score" />
+                    
+                    {/* 7. Best Marketing Materials */}
+                    <AwardCard icon={<Megaphone size={24}/>} title="Best Marketing Materials" winner={getWinner(results, 'avgMarketing')} sub="Highest Marketing Score" />
                 </div>
 
                 {/* Main Table */}
+                <h3 className="text-xl font-bold text-gray-700 mb-4 border-l-4 border-uaBlue pl-3">Score Overview</h3>
                 <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="min-w-full text-sm text-left">
@@ -159,6 +188,7 @@ export default function AdminDashboard() {
                                     <th className="px-6 py-4 text-center bg-white/10">Paper (Avg)</th>
                                     <th className="px-6 py-4 text-center bg-white/10">Presenter (Avg)</th>
                                     <th className="px-6 py-4 text-center bg-white/10">Poster (Avg)</th>
+                                    <th className="px-6 py-4 text-center bg-white/10">Marketing (Avg)</th>
                                     <th className="px-6 py-4 text-center">Action</th>
                                 </tr>
                             </thead>
@@ -187,6 +217,7 @@ export default function AdminDashboard() {
                                         <td className="px-6 py-4 text-center font-mono font-bold text-lg text-yellow-600 bg-yellow-50/50">{r.avgPaper}</td>
                                         <td className="px-6 py-4 text-center font-mono font-bold text-lg text-green-600 bg-green-50/50">{r.avgPresenter}</td>
                                         <td className="px-6 py-4 text-center font-mono font-bold text-lg text-purple-600 bg-purple-50/50">{r.avgPoster}</td>
+                                        <td className="px-6 py-4 text-center font-mono font-bold text-lg text-pink-600 bg-pink-50/50">{r.avgMarketing}</td>
                                         <td className="px-6 py-4 text-center">
                                             <button 
                                                 onClick={() => setSelectedTeam(r)}
@@ -256,6 +287,7 @@ export default function AdminDashboard() {
                                                     <div className="flex justify-between"><span>Research:</span> <span>{judge.scores.paper?.researchQuality || 0}</span></div>
                                                     <div className="flex justify-between"><span>Innovation:</span> <span>{judge.scores.paper?.innovation || 0}</span></div>
                                                     <div className="flex justify-between"><span>Impact:</span> <span>{judge.scores.paper?.impact || 0}</span></div>
+                                                    <div className="flex justify-between"><span>Usability/UX:</span> <span>{judge.scores.paper?.usability || 0}</span></div>
                                                 </div>
                                             </div>
 
@@ -275,6 +307,12 @@ export default function AdminDashboard() {
                                             <div className="bg-white p-2 rounded border border-gray-100 flex justify-between font-bold text-gray-700">
                                                 <span>Poster</span>
                                                 <span>{judge.totals.poster}/100</span>
+                                            </div>
+
+                                            {/* Marketing Breakdown */}
+                                            <div className="bg-white p-2 rounded border border-gray-100 flex justify-between font-bold text-gray-700">
+                                                <span>Marketing</span>
+                                                <span>{judge.totals.marketing}/100</span>
                                             </div>
                                         </div>
                                     </div>
@@ -302,8 +340,13 @@ export default function AdminDashboard() {
 
 const getWinner = (list, key) => {
     if (list.length === 0) return "TBD";
+    // Sort descending based on the specific key provided
     const sorted = [...list].sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]));
     const winner = sorted[0];
+    
+    // Safety check in case scores are 0
+    if (parseFloat(winner[key]) === 0) return "TBD";
+
     return (
         <div className="flex items-center gap-3">
              <div className="h-12 w-12 rounded-lg bg-gray-50 border border-gray-100 p-1 flex-shrink-0">
@@ -324,11 +367,11 @@ const getWinner = (list, key) => {
 };
 
 const AwardCard = ({ title, winner, sub, icon }) => (
-    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 relative overflow-hidden group">
+    <div className="bg-white p-6 rounded-xl shadow-md border border-gray-100 relative overflow-hidden group hover:scale-[1.02] transition-transform">
         <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity text-uaBlue">
             {icon}
         </div>
-        <h3 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
+        <h3 className="text-gray-500 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
             {title}
         </h3>
         <div className="relative z-10">
