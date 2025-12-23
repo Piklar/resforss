@@ -156,8 +156,14 @@ export default function JudgeDashboard() {
             {selectedTeam && (
                 <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-gray-200 shadow-sm px-4 py-3 flex justify-between items-center">
                     <div className="flex items-center gap-3">
-                         <div className={`h-10 w-10 rounded-full flex items-center justify-center text-white font-bold shadow-md ${isEditing ? 'bg-green-600' : 'bg-uaBlue'}`}>
-                            {selectedTeam.name.replace(/\D/g,'')}
+                         {/* HEADER LOGO */}
+                         <div className={`h-12 w-12 rounded-lg bg-white border border-gray-200 p-1 flex items-center justify-center shadow-sm overflow-hidden`}>
+                            <img 
+                                src={`/teams/${selectedTeam.name}.png`} 
+                                alt={selectedTeam.name}
+                                className="h-full w-full object-contain"
+                                onError={(e) => { e.target.style.display = 'none'; }}
+                            />
                          </div>
                          <div className="hidden sm:block">
                             <h2 className="text-sm font-bold text-uaBlue leading-tight">{selectedTeam.name}</h2>
@@ -177,7 +183,7 @@ export default function JudgeDashboard() {
                         </button>
 
                         {isDropdownOpen && (
-                            <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+                            <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 origin-top-right">
                                 <div className="p-3 border-b border-gray-100 bg-gray-50">
                                     <div className="relative">
                                         <Search size={14} className="absolute left-2 top-2.5 text-gray-400" />
@@ -189,16 +195,26 @@ export default function JudgeDashboard() {
                                         />
                                     </div>
                                 </div>
-                                <div className="max-h-60 overflow-y-auto">
+                                <div className="max-h-80 overflow-y-auto">
                                     {filteredTeams.map(team => {
                                         const graded = isGraded(team._id);
                                         return (
                                             <button 
                                                 key={team._id}
                                                 onClick={() => handleSelectTeam(team)}
-                                                className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 flex justify-between items-center ${selectedTeam._id === team._id ? 'bg-blue-50 text-uaBlue font-bold' : 'text-gray-700'}`}
+                                                className={`w-full text-left px-4 py-3 text-sm hover:bg-blue-50 flex items-center gap-3 ${selectedTeam._id === team._id ? 'bg-blue-50 text-uaBlue font-bold' : 'text-gray-700'}`}
                                             >
-                                                <span className="truncate w-40">{team.name}</span>
+                                                {/* DROPDOWN LOGO */}
+                                                <div className="h-8 w-8 bg-white border border-gray-200 rounded p-0.5 flex-shrink-0">
+                                                    <img 
+                                                        src={`/teams/${team.name}.png`} 
+                                                        className="h-full w-full object-contain"
+                                                        onError={(e) => { e.target.style.display='none' }}
+                                                    />
+                                                </div>
+                                                <div className="flex-1 truncate">
+                                                    {team.name}
+                                                </div>
                                                 <div className="flex items-center gap-2">
                                                     {graded && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded border border-green-200">Graded</span>}
                                                     {selectedTeam._id === team._id && <CheckCircle2 size={14} />}
@@ -236,7 +252,7 @@ export default function JudgeDashboard() {
                                     <button 
                                         key={team._id} 
                                         onClick={() => handleSelectTeam(team)} 
-                                        className={`group p-5 rounded-xl shadow-sm hover:shadow-md border transition-all flex items-start gap-4 relative overflow-hidden text-left
+                                        className={`group p-4 rounded-xl shadow-sm hover:shadow-md border transition-all flex items-start gap-4 relative overflow-hidden text-left h-32
                                             ${graded ? 'bg-blue-50/50 border-green-200' : 'bg-white border-gray-100 hover:border-uaBlue'}`}
                                     >
                                         {graded && (
@@ -244,14 +260,27 @@ export default function JudgeDashboard() {
                                                 GRADED
                                             </div>
                                         )}
-                                        <div className={`h-12 w-12 rounded-lg flex items-center justify-center font-bold transition-colors
-                                            ${graded ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-uaBlue group-hover:bg-uaBlue group-hover:text-white'}`}>
-                                            {idx + 1}
+                                        
+                                        {/* MAIN GRID LOGO */}
+                                        <div className="h-16 w-16 bg-white border border-gray-200 rounded-lg p-1 flex-shrink-0 flex items-center justify-center overflow-hidden">
+                                            <img 
+                                                src={`/teams/${team.name}.png`} 
+                                                alt={team.name}
+                                                className="h-full w-full object-contain"
+                                                onError={(e) => {
+                                                    // Fallback to Index Number if Image Fails
+                                                    e.target.style.display = 'none';
+                                                    e.target.parentElement.innerText = idx + 1;
+                                                    e.target.parentElement.classList.add('font-bold', 'text-uaBlue', 'text-xl');
+                                                }}
+                                            />
                                         </div>
-                                        <div>
-                                            <h3 className="font-bold text-lg text-uaBlue">{team.name}</h3>
-                                            <p className="text-gray-500 text-sm line-clamp-2">{team.projectTitle}</p>
+
+                                        <div className="flex flex-col justify-center h-full">
+                                            <h3 className="font-bold text-lg text-uaBlue leading-tight mb-1">{team.name}</h3>
+                                            <p className="text-gray-500 text-xs line-clamp-2">{team.projectTitle}</p>
                                         </div>
+                                        
                                         {!graded && <ChevronRight className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 group-hover:text-uaBlue transition-all" />}
                                     </button>
                                 );
