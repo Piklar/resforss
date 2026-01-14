@@ -92,7 +92,7 @@ export default function JudgeDashboard() {
     };
 
     const viewPoster = () => {
-        const imageUrl = `/posters/${selectedTeam.name}.png`; 
+        const imageUrl = `/posters/${selectedTeam.name}.pdf`; 
         Swal.fire({
             title: `Poster: ${selectedTeam.name}`,
             imageUrl: imageUrl,
