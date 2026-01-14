@@ -92,20 +92,33 @@ export default function JudgeDashboard() {
     };
 
     const viewPoster = () => {
-        const imageUrl = `/posters/${selectedTeam.name}.pdf`; 
+        const fileUrl = `/posters/${selectedTeam.name}.pdf`;
+        
         Swal.fire({
             title: `Poster: ${selectedTeam.name}`,
-            imageUrl: imageUrl,
-            imageAlt: 'Team Poster',
-            width: '600px',
+            // WIDTH: PDFs need more width to be readable
+            width: '900px', 
+            // HTML: Use an iframe to embed the PDF
+            html: `
+                <div style="height: 600px; width: 100%;">
+                    <iframe 
+                        src="${fileUrl}" 
+                        width="100%" 
+                        height="100%" 
+                        style="border: none;"
+                        title="Team Poster"
+                    ></iframe>
+                </div>
+                <div style="margin-top: 10px;">
+                    <a href="${fileUrl}" target="_blank" class="text-uaBlue underline text-sm">
+                        Problem viewing? Click here to open in new tab
+                    </a>
+                </div>
+            `,
             showCloseButton: true,
             showConfirmButton: false,
-            didOpen: () => {
-                const img = Swal.getImage();
-                img.onerror = () => {
-                    img.src = 'https://via.placeholder.com/600x800?text=No+Poster+File+Found';
-                };
-            }
+            // Note: img.onerror does not work on iframes. 
+            // If the file is missing, the browser will show its default 404 inside the box.
         });
     };
 
