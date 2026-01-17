@@ -352,7 +352,7 @@ export default function JudgeDashboard() {
                                 </button>
                             }
                         >
-                            <Input label="Poster Design & Org" max={60} value={scores?.poster?.design} desc="How effective is the poster design in showing the content of the subject and how valuable is each figure or graph in furthering the viewer’s understanding of the subject?" onChange={(v) => handleScoreChange('poster', 'design', v, 60)} />
+                            <Input label="Poster Design & Organization" max={60} value={scores?.poster?.design} desc="How effective is the poster design in showing the content of the subject and how valuable is each figure or graph in furthering the viewer’s understanding of the subject?" onChange={(v) => handleScoreChange('poster', 'design', v, 60)} />
                             <Input label="Explanation Ability" max={20} value={scores?.poster?.explanation} desc="Familiar with everything that is being covered and confident speaking about the subject matter. Giving a presentation on something implies that the presenter is an expert on the subject." onChange={(v) => handleScoreChange('poster', 'explanation', v, 20)} />
                             <Input label="Clarity of Presentation" max={20} value={scores?.poster?.clarity} desc="Clearness to perception or understanding of presentation." onChange={(v) => handleScoreChange('poster', 'clarity', v, 20)} />
                         </SectionCard>
