@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import api from '../api/axios'; 
 import { useNavigate } from 'react-router-dom';
-import eventLogo from '../assets/cei2026f.png'; // Make sure this path is correct
+import { Loader2 } from 'lucide-react'; // Added for the spinner icon
+import eventLogo from '../assets/cei2026f.png';
 
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false); // 1. Add loading state
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true); // 2. Start loading
+
         try {
             const response = await api.post('/auth/login', { username, password });
             
@@ -26,8 +30,10 @@ export default function Login() {
             } else {
                 navigate('/judge');
             }
+            // Note: We don't need to set isLoading(false) here because we are navigating away
         } catch (err) {
             setError('Invalid Credentials');
+            setIsLoading(false); // 3. Stop loading only if there is an error
         }
     };
 
@@ -46,7 +52,8 @@ export default function Login() {
                         <input 
                             type="text" 
                             required
-                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-uaBlue focus:outline-none"
+                            disabled={isLoading} // Disable input while loading
+                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-uaBlue focus:outline-none disabled:bg-gray-100"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                         />
@@ -56,19 +63,28 @@ export default function Login() {
                         <input 
                             type="password" 
                             required
-                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-uaBlue focus:outline-none"
+                            disabled={isLoading} // Disable input while loading
+                            className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-uaBlue focus:outline-none disabled:bg-gray-100"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
                     </div>
 
-                    {error && <p className="text-red-500 text-sm text-center font-bold">{error}</p>}
+                    {error && <p className="text-red-500 text-sm text-center font-bold animate-pulse">{error}</p>}
 
                     <button 
                         type="submit" 
-                        className="w-full bg-uaBlue text-white font-bold py-3 rounded-lg hover:bg-blue-900 transition duration-300 shadow-md"
+                        disabled={isLoading} // 4. Disable button while loading
+                        className="w-full bg-uaBlue text-white font-bold py-3 rounded-lg hover:bg-blue-900 transition duration-300 shadow-md flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        Sign In
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="animate-spin" size={20} />
+                                <span>Signing In...</span>
+                            </>
+                        ) : (
+                            "Sign In"
+                        )}
                     </button>
                 </form>
             </div>
