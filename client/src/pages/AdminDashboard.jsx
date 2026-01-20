@@ -169,8 +169,8 @@ export default function AdminDashboard() {
                     {/* 5. Best Paper Presenter */}
                     <AwardCard icon={<Mic size={24}/>} title="Best Paper Presenter" winner={getWinner(results, 'avgPresenter')} sub="Highest Presenter Score" />
                     
-                    {/* 6. Best Poster */}
-                    <AwardCard icon={<ImageIcon size={24}/>} title="Best Poster" winner={getWinner(results, 'avgPoster')} sub="Highest Poster Score" />
+                    {/* 6. Best Poster - UPDATED TO SHOW TOP 3 */}
+                    <AwardCard icon={<ImageIcon size={24}/>} title="Best Poster" winner={getTop3Winners(results, 'avgPoster')} sub="Top 3 Highest Poster Scores" />
                     
                     {/* 7. Best Marketing Materials */}
                     <AwardCard icon={<Megaphone size={24}/>} title="Best Marketing Materials" winner={getWinner(results, 'avgMarketing')} sub="Highest Marketing Score" />
@@ -362,6 +362,38 @@ const getWinner = (list, key) => {
                     Score: {winner[key]}
                 </span>
             </div>
+        </div>
+    );
+};
+
+// NEW FUNCTION: Get Top 3 Winners
+const getTop3Winners = (list, key) => {
+    if (list.length === 0) return "TBD";
+    const sorted = [...list].sort((a, b) => parseFloat(b[key]) - parseFloat(a[key]));
+    const top3 = sorted.slice(0, 3);
+    
+    if (top3.length === 0 || parseFloat(top3[0][key]) === 0) return "TBD";
+
+    return (
+        <div className="flex flex-col gap-2 mt-1">
+            {top3.map((winner, index) => (
+                <div key={index} className="flex items-center gap-3 border-b border-gray-50 pb-1 last:border-0 last:pb-0">
+                    <span className="text-gray-300 font-bold text-sm w-3">#{index + 1}</span>
+                    <div className="h-8 w-8 rounded-md bg-gray-50 border border-gray-100 p-0.5 flex-shrink-0">
+                        <img 
+                            src={`/teams/${winner.name}.png`} 
+                            onError={(e) => {e.target.src = "https://via.placeholder.com/50?text=IMG"}} 
+                            className="h-full w-full object-contain"
+                        />
+                    </div>
+                    <div className="overflow-hidden min-w-0">
+                        <span className="block text-sm font-bold truncate text-uaBlue">{winner.name}</span>
+                        <span className="text-[10px] font-bold bg-yellow-400/20 text-yellow-700 px-1.5 rounded inline-block">
+                            {winner[key]}
+                        </span>
+                    </div>
+                </div>
+            ))}
         </div>
     );
 };
